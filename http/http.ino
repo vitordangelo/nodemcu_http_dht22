@@ -5,14 +5,14 @@
 
 const char* WLAN_SSID = "wll_vitor";
 const char* WLAN_PASS = "248163264128256";
-#define DHTPIN D3
+#define DHTPIN D2
 #define DHTTYPE DHT22
 
 WiFiClient clientWifi;
 
 DHT dht(DHTPIN, DHTTYPE);
-int humidty;
-int temperature;
+float humidty;
+float temperature;
 
 void setup() {
   Serial.begin(115200);
@@ -21,8 +21,8 @@ void setup() {
 }
 
 void loop() {
+  readTemperetureHumidity();
   HttpPost();
-  delay(5000);
 }
 
 void connectWifi() {
@@ -65,12 +65,18 @@ void HttpGet() {
 
 void HttpPost() {
   StaticJsonBuffer<200> jsonBuffer;
+
   JsonObject& root = jsonBuffer.createObject();
-  
-  root["name"] = "Goku";
-  root["ki"] = 1351824120;
+  root["temperature"] = temperature;
+  root["humidty"] = humidty;
+
+  JsonObject& timestap = root.createNestedObject("timestap");
+  timestap[".sv"] = "timestamp";  
+
   String dataJson;
   root.prettyPrintTo(dataJson);
+
+  Serial.println(dataJson);
 
   HTTPClient http;
   
@@ -78,7 +84,7 @@ void HttpPost() {
     connectWifi();
   }
 
-  http.begin("https://fir-nodejs-dcdeb.firebaseio.com/users/.json", "B8:4F:40:70:0C:63:90:E0:07:E8:7D:BD:B4:11:D0:4A:EA:9C:90:F6");
+  http.begin("https://fir-nodejs-dcdeb.firebaseio.com/dht22/.json", "B8:4F:40:70:0C:63:90:E0:07:E8:7D:BD:B4:11:D0:4A:EA:9C:90:F6");
   int httpCode = http.POST(dataJson);
   Serial.println(httpCode);
 
@@ -92,6 +98,19 @@ void HttpPost() {
 
 void readTemperetureHumidity() {
   humidty = dht.readHumidity();
-  temperature = dht.readTemperature(false);
-  delay(5000);
+  temperature = dht.readTemperature();
+
+  if (isnan(humidty) || isnan(temperature) ){
+    Serial.println("Falha na leitura!");
+    return;
+  }
+
+  Serial.print("Umidade: ");
+  Serial.print(humidty);
+  Serial.println(" %\t");
+  Serial.print("Temperatura: ");
+  Serial.print(temperature);
+  Serial.println(" Celsius");
+
+  delay(60000);
 }
