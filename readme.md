@@ -1,7 +1,8 @@
 # NodeMCU HTTP DHT22
 
 1.  DHT22
-    [Github page](https://github.com/adafruit/DHT-sensor-library)
+    [DHT-sensor-library](https://github.com/adafruit/DHT-sensor-library)
+    [Adafruit_Sensor](https://github.com/adafruit/Adafruit_Sensor)
     
 2.  ArduinoJson
     [Doc](https://arduinojson.org/v5/doc/)

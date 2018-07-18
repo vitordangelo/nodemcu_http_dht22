@@ -1,10 +1,11 @@
+#include <DHT.h>
+
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 #include <ArduinoJson.h>
-#include <DHT.h>
 
-const char* WLAN_SSID = "wll_vitor";
-const char* WLAN_PASS = "248163264128256";
+const char* WLAN_SSID = "V2Tech";
+const char* WLAN_PASS = "v2techwifi";
 #define DHTPIN D2
 #define DHTTYPE DHT22
 
@@ -44,34 +45,12 @@ void connectWifi() {
   Serial.println(WiFi.localIP());
 }
 
-void HttpGet() {
-  HTTPClient http;
-  
-    if (!WiFi.status() == WL_CONNECTED ){
-      connectWifi();
-    }
-  
-    http.begin("https://fir-nodejs-dcdeb.firebaseio.com/users/-Kvo0Ku6qCW2dyA5kEzk.json", "B8:4F:40:70:0C:63:90:E0:07:E8:7D:BD:B4:11:D0:4A:EA:9C:90:F6");
-    int httpCode = http.GET();
-    Serial.println(httpCode);
-  
-    if (httpCode == 200) {
-      String payload = http.getString();
-      Serial.println(payload);
-    }
-  
-    http.end();
-}
-
 void HttpPost() {
   StaticJsonBuffer<200> jsonBuffer;
 
   JsonObject& root = jsonBuffer.createObject();
   root["temperature"] = temperature;
-  root["humidty"] = humidty;
-
-  JsonObject& timestap = root.createNestedObject("timestap");
-  timestap[".sv"] = "timestamp";  
+  root["humidity"] = humidty;
 
   String dataJson;
   root.prettyPrintTo(dataJson);
@@ -84,7 +63,9 @@ void HttpPost() {
     connectWifi();
   }
 
-  http.begin("https://fir-nodejs-dcdeb.firebaseio.com/dht22/.json", "B8:4F:40:70:0C:63:90:E0:07:E8:7D:BD:B4:11:D0:4A:EA:9C:90:F6");
+  http.begin("http://35.199.102.99:8300/api/v1/log");
+  http.addHeader("Content-Type", "application/json");
+
   int httpCode = http.POST(dataJson);
   Serial.println(httpCode);
 
